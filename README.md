@@ -2,6 +2,8 @@
 
 Makes a microphone that is too quiet louder (C# / .NET 10 / WPF, plus a small C++ DLL). Built for the HyperX Cloud III, whose mic is still too quiet at 100 % in Windows. Keeping it simple with only one slider, one level meter, no virtual audio device and no program that has to run in the background.
 
+![CubeAudio with the boost active at +16 dB](docs/screenshot.png)
+
 Meant for microphones that have no boost of their own, typically USB headsets where 100 % in Windows is the maximum. If your device offers "Microphone Boost" in its Windows level settings, use that first.
 
 ## Installing
