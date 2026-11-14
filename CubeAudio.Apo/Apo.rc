@@ -1,0 +1,28 @@
+#include <winver.h>
+
+#define STRINGIZE_(value) #value
+#define STRINGIZE(value) STRINGIZE_(value)
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION CUBEAUDIO_VERSION_NUMBERS
+PRODUCTVERSION CUBEAUDIO_VERSION_NUMBERS
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_DLL
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "FileDescription", "CubeAudio microphone boost"
+            VALUE "FileVersion", STRINGIZE(CUBEAUDIO_VERSION)
+            VALUE "InternalName", "CubeAudioApo"
+            VALUE "OriginalFilename", "CubeAudioApo.dll"
+            VALUE "ProductName", "CubeAudio"
+            VALUE "ProductVersion", STRINGIZE(CUBEAUDIO_VERSION)
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

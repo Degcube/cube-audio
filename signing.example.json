@@ -1,0 +1,4 @@
+{
+  "certificate": "SHA-1 thumbprint of your code signing certificate",
+  "timestampServer": "http://timestamp.digicert.com"
+}

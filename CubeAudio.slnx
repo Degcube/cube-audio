@@ -1,0 +1,15 @@
+<Solution>
+  <Project Path="CubeAudio/CubeAudio.csproj">
+    <BuildDependency Project="CubeAudio.Apo/CubeAudio.Apo.vcxproj" />
+  </Project>
+  <Project Path="CubeAudio.Tests/CubeAudio.Tests.csproj" />
+  <Project Path="CubeAudio.Apo/CubeAudio.Apo.vcxproj" Id="5e383e82-d044-4987-bbf4-7f497880eaff">
+    <BuildType Project="Release" />
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="CubeAudio.Apo.Test/CubeAudio.Apo.Test.vcxproj" Id="e8ab96cc-4c9c-4fe2-99cd-6d65ce3eae52">
+    <BuildType Project="Release" />
+    <Platform Project="x64" />
+    <BuildDependency Project="CubeAudio.Apo/CubeAudio.Apo.vcxproj" />
+  </Project>
+</Solution>
