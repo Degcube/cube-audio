@@ -6,6 +6,10 @@ Meant for microphones that have no boost of their own, typically USB headsets wh
 
 ## Installing
 
+Download `CubeAudio-<version>-win-x64.zip` from the [latest release](https://github.com/Degcube/cube-audio/releases/latest), unpack it anywhere and start `CubeAudio.exe`. It needs the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (x64). If it is missing, CubeAudio says so on start and offers the download. To get rid of it again, click **Remove** in the app and delete the file.
+
+### Building from source
+
 ```powershell
 .\install.ps1
 ```
@@ -100,6 +104,7 @@ Enable, Repair and Remove log what they do: `C:\ProgramData\CubeAudio\CubeAudio.
 - `dotnet build CubeAudio\CubeAudio.csproj` (and with it `install.ps1`) builds the DLL when needed through Visual Studio's MSBuild. `dotnet build` on the whole solution does not work, the dotnet CLI cannot build C++. When `dotnet build` or `dotnet test` has to build the DLL itself, it calls `pwsh`, so that path needs PowerShell 7.
 - What the app and the DLL need to know about each other (class ID, registry path, value names, event name, maximum gain) is written down exactly once on each side: `CubeAudio.Apo\Contract.h` and `CubeAudio\Boost\EffectContract.cs`. A test compares the two, so a change made on just one side fails the next `dotnet test`.
 - The version lives in `Directory.Build.props` and applies to the app and the DLL.
+- `release.ps1` builds the release package into `artifacts\`: the signed exe with `LICENSE` and `THIRD-PARTY-NOTICES.txt` as a zip. It refuses to run with uncommitted changes or without a valid signature. `install.ps1` and `release.ps1` share the build and signing step in `publish.ps1`.
 - The DLL is built reproducibly (`/Brepro`): same source, same file. CubeAudio compares the installed DLL with the one embedded in the exe and only shows **Repair** when something really changed.
 - Microphones whose driver already brings its own endpoint effect (many Realtek onboard inputs) are refused by CubeAudio rather than having the driver effect replaced.
 
