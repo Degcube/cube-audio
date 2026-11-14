@@ -16,7 +16,8 @@ if ((Get-AuthenticodeSignature (Join-Path $stage 'CubeAudio.exe')).Status -ne 'V
     throw 'CubeAudio.exe is not signed. A release needs signing.json.'
 }
 
-Copy-Item (Join-Path $PSScriptRoot 'LICENSE'), (Join-Path $PSScriptRoot 'THIRD-PARTY-NOTICES.txt') $stage
+Copy-Item (Join-Path $PSScriptRoot 'LICENSE'), (Join-Path $PSScriptRoot 'THIRD-PARTY-NOTICES.txt'), (Join-Path $PSScriptRoot 'uninstall.ps1') $stage
+& (Join-Path $PSScriptRoot 'sign.ps1') (Join-Path $stage 'uninstall.ps1')
 
 if (Test-Path $zip) {
     Remove-Item $zip

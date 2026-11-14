@@ -1,11 +1,13 @@
+[CmdletBinding(SupportsShouldProcess)]
 param(
-    [string]$Destination = (Join-Path $env:LOCALAPPDATA 'Programs\CubeAudio')
+    [string]$Destination = $(if (Test-Path (Join-Path $PSScriptRoot 'CubeAudio.exe')) { $PSScriptRoot } else { Join-Path $env:LOCALAPPDATA 'Programs\CubeAudio' })
 )
 
 $ErrorActionPreference = 'Stop'
 
 $exe = Join-Path $Destination 'CubeAudio.exe'
 $shortcut = Join-Path ([Environment]::GetFolderPath('Programs')) 'CubeAudio.lnk'
+$files = 'CubeAudio.exe', 'LICENSE', 'THIRD-PARTY-NOTICES.txt', 'uninstall.ps1'
 $system = @(
     'HKLM:\SOFTWARE\CubeAudio'
     (Join-Path $env:ProgramFiles 'CubeAudio')
@@ -18,26 +20,37 @@ if (Get-Process CubeAudio -ErrorAction SilentlyContinue | Where-Object { $_.Path
 
 if ($system | Where-Object { Test-Path $_ }) {
     if (-not (Test-Path $exe)) {
-        throw "CubeAudio is still registered in Windows, but $exe is missing. Run .\install.ps1 first, then uninstall again."
+        throw "CubeAudio is still registered in Windows, but $exe is missing. Put CubeAudio.exe back there, then uninstall again."
     }
 
-    $removal = Start-Process $exe -ArgumentList '--detach-all' -Verb RunAs -Wait -PassThru
-    if ($removal.ExitCode -ne 0) {
-        throw 'CubeAudio could not be removed from Windows.'
-    }
+    if ($PSCmdlet.ShouldProcess('CubeAudio in Windows (boost on all microphones, effect DLL, settings, log)', 'Remove')) {
+        $removal = Start-Process $exe -ArgumentList '--detach-all' -Verb RunAs -Wait -PassThru
+        if ($removal.ExitCode -ne 0) {
+            throw 'CubeAudio could not be removed from Windows.'
+        }
 
-    $left = $system | Where-Object { Test-Path $_ }
-    if ($left) {
-        throw "Not everything was removed: $($left -join ', ')"
+        $left = $system | Where-Object { Test-Path $_ }
+        if ($left) {
+            throw "Not everything was removed: $($left -join ', ')"
+        }
     }
 }
 
-if (Test-Path $shortcut) {
+if ((Test-Path $shortcut) -and (New-Object -ComObject WScript.Shell).CreateShortcut($shortcut).TargetPath -eq $exe) {
     Remove-Item $shortcut
 }
 
-if (Test-Path $Destination) {
-    Remove-Item $Destination -Recurse
+foreach ($file in $files) {
+    $path = Join-Path $Destination $file
+    if (Test-Path $path) {
+        Remove-Item $path
+    }
 }
 
-Write-Host 'CubeAudio removed.'
+if ((Test-Path $Destination) -and -not (Get-ChildItem $Destination -Force)) {
+    Remove-Item $Destination -ErrorAction SilentlyContinue
+}
+
+if (-not $WhatIfPreference) {
+    Write-Host 'CubeAudio removed.'
+}
