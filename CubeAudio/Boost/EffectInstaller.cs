@@ -17,26 +17,25 @@ public static class EffectInstaller
         }
     }
 
-    public static bool IsCurrent(string bundled, string installed)
-    {
-        if (!File.Exists(installed))
-            return false;
+    private const string Resource = "CubeAudioApo.dll";
 
-        return !File.Exists(bundled) || File.ReadAllBytes(installed).AsSpan().SequenceEqual(File.ReadAllBytes(bundled));
+    private static readonly Lazy<byte[]> Embedded = new(ReadEmbedded);
+
+    public static byte[] Bundled => Embedded.Value;
+
+    public static bool IsCurrent(ReadOnlySpan<byte> bundled, string installed)
+    {
+        return File.Exists(installed) && File.ReadAllBytes(installed).AsSpan().SequenceEqual(bundled);
     }
 
     public static void Install()
     {
-        var bundled = BoostInstallation.BundledDll;
         var installed = BoostInstallation.InstalledDll;
-
-        if (!File.Exists(bundled))
-            throw new FileNotFoundException("CubeAudioApo.dll is missing next to CubeAudio.exe.", bundled);
 
         Directory.CreateDirectory(Path.GetDirectoryName(installed)!);
 
-        if (!IsCurrent(bundled, installed))
-            WhenReleased(() => File.Copy(bundled, installed, overwrite: true));
+        if (!IsCurrent(Bundled, installed))
+            WhenReleased(() => File.WriteAllBytes(installed, Bundled));
 
         var code = SystemTool.Run("regsvr32.exe", $"/s \"{installed}\"");
 
@@ -62,6 +61,17 @@ public static class EffectInstaller
         }
 
         Registry.LocalMachine.DeleteSubKeyTree(EffectContract.SettingsKey, throwOnMissingSubKey: false);
+    }
+
+    private static byte[] ReadEmbedded()
+    {
+        using var resource = typeof(EffectInstaller).Assembly.GetManifestResourceStream(Resource)
+            ?? throw new InvalidOperationException($"{Resource} is not embedded in this build.");
+        using var buffer = new MemoryStream();
+
+        resource.CopyTo(buffer);
+
+        return buffer.ToArray();
     }
 
     private static void WhenReleased(Action fileOperation)

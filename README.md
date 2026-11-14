@@ -10,7 +10,7 @@ Meant for microphones that have no boost of their own, typically USB headsets wh
 .\install.ps1
 ```
 
-Builds to `%LOCALAPPDATA%\Programs\CubeAudio` and creates a Start menu shortcut. Needs Visual Studio with the C++ workload (for the DLL) and the .NET 10 SDK.
+Builds to `%LOCALAPPDATA%\Programs\CubeAudio` and creates a Start menu shortcut. Needs Visual Studio with the C++ workload (for the DLL) and the .NET 10 SDK. Only tested on Windows 11 (build 26200).
 
 ```powershell
 .\uninstall.ps1
@@ -20,21 +20,24 @@ Removes everything again: it takes the boost off all microphones (this asks for 
 
 ### Signing
 
-`install.ps1` signs `CubeAudioApo.dll`, `CubeAudio.exe` and `CubeAudio.dll` through `sign.ps1` as soon as a `signing.json` sits next to the script. It holds the certificate thumbprint and the timestamp server, the template is `signing.example.json`. The file is in `.gitignore`: my builds are signed, but my certificate is of course not part of the repo.
+`install.ps1` signs `CubeAudioApo.dll` and `CubeAudio.exe` through `sign.ps1` as soon as a `signing.json` sits next to the script. It holds the certificate thumbprint and the timestamp server, the template is `signing.example.json`. The file is in `.gitignore`: my builds are signed, but my certificate is of course not part of the repo.
+
+The installed app is a single file: `CubeAudio.exe` contains the program, its libraries and the effect DLL. Enable runs with admin rights, so there are deliberately no loose files next to the exe that could be swapped beforehand. With a signed build, any change to that one file breaks its signature, and the admin prompt no longer shows the publisher.
 
 Builds from Visual Studio or `dotnet build` are never signed.
 
 ### Without a signature
 
-If `signing.json` is missing, `sign.ps1` skips the step and `install.ps1` installs unsigned. For CubeAudio this changes nothing:
+If `signing.json` is missing, `sign.ps1` skips the step and `install.ps1` installs unsigned. CubeAudio works the same:
 
 - Windows loads the unsigned effect DLL into the audio engine just the same (tested on Windows 11, build 26200).
 - Enable writes exactly the same things as with a signed build, see [What Enable changes in Windows](#what-enable-changes-in-windows). There is no additional registry entry and no change to security settings for the unsigned case.
-- The only visible difference: the admin prompt on Enable shows "Unknown publisher" instead of a publisher name.
+
+Two things do differ. The admin prompt on Enable shows "Unknown publisher" instead of a publisher name. And the tamper protection described above is gone: an unsigned exe looks the same whether or not it was modified.
 
 ## Usage
 
-1. Pick the microphone at the top right (the default mic is preselected).
+1. Pick the microphone at the top right. Preselected is the one that already has the boost, otherwise the default mic.
 2. **Enable** attaches the boost to this microphone. This asks for admin rights once and restarts Windows audio for a moment, so running calls and recordings get interrupted.
 3. **Auto-calibrate**: talk normally for 5 seconds and CubeAudio sets the gain. Or drag the slider by hand until your voice lands in the brighter part of the level meter.
 4. **Test recording** records 5 seconds and plays them back: this is how others hear you.
@@ -81,7 +84,7 @@ CubeAudio touches nothing else, in particular no Windows security settings.
 
 ## When it stops working
 
-A driver update or a different USB port can reset the entry on the microphone, because Windows then creates the device anew. Open CubeAudio: if the bottom says "not installed" or **Repair**, click it once.
+A driver update or a different USB port can reset the entry on the microphone, because Windows then creates the device anew. Open CubeAudio: if the button at the bottom says **Enable** or **Repair**, click it once.
 
 The status line doesn't rely on the registry alone. While the window is open, CubeAudio listens on the microphone and asks the effect whether it is running. If it isn't, the status reads "Windows is not running the boost effect" and offers **Repair**.
 
@@ -94,10 +97,10 @@ Enable, Repair and Remove log what they do: `C:\ProgramData\CubeAudio\CubeAudio.
 - `dotnet test CubeAudio.Tests` checks the registry logic (attaching, backup, restoring), the status display, the settings and the calibration. The registry tests run without admin rights against a throwaway branch under `HKCU\Software\CubeAudio.Tests`.
 - In Visual Studio the solution builds the DLL first, then the app. With `CubeAudio.Apo.Test` as the startup project, F5 tests the freshly built DLL.
 - `CubeAudio.Apo\build.ps1 -Test` does the same in a terminal: build the DLL, then check gain, limiter and the behaviour towards the audio engine, without registering anything.
-- `dotnet build CubeAudio\CubeAudio.csproj` (and with it `install.ps1`) builds the DLL when needed through Visual Studio's MSBuild. `dotnet build` on the whole solution does not work, the dotnet CLI cannot build C++.
-- What the app and the DLL need to know about each other (class ID, registry path, value names, event name, maximum gain) is written down exactly once on each side: `CubeAudio.Apo\Contract.h` and `CubeAudio\Boost\EffectContract.cs`. A test compares the two, so a change on one side only shows up on the next `dotnet test`.
+- `dotnet build CubeAudio\CubeAudio.csproj` (and with it `install.ps1`) builds the DLL when needed through Visual Studio's MSBuild. `dotnet build` on the whole solution does not work, the dotnet CLI cannot build C++. When `dotnet build` or `dotnet test` has to build the DLL itself, it calls `pwsh`, so that path needs PowerShell 7.
+- What the app and the DLL need to know about each other (class ID, registry path, value names, event name, maximum gain) is written down exactly once on each side: `CubeAudio.Apo\Contract.h` and `CubeAudio\Boost\EffectContract.cs`. A test compares the two, so a change made on just one side fails the next `dotnet test`.
 - The version lives in `Directory.Build.props` and applies to the app and the DLL.
-- The DLL is built reproducibly (`/Brepro`): same source, same file. CubeAudio compares the installed DLL with the bundled one and only shows **Repair** when something really changed.
+- The DLL is built reproducibly (`/Brepro`): same source, same file. CubeAudio compares the installed DLL with the one embedded in the exe and only shows **Repair** when something really changed.
 - Microphones whose driver already brings its own endpoint effect (many Realtek onboard inputs) are refused by CubeAudio rather than having the driver effect replaced.
 
 ## License

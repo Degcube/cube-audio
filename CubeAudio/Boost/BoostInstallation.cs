@@ -18,13 +18,12 @@ public static class BoostInstallation
 {
     public const string InstallKey = EffectContract.SettingsKey + @"\Install";
 
-    public static string BundledDll => Path.Combine(AppContext.BaseDirectory, "CubeAudioApo.dll");
     public static string InstalledDll => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "CubeAudio", "CubeAudioApo.dll");
     public static bool EffectIsRunning => NativeMethods.EventExists(EffectContract.RunningEvent);
 
-    public static BoostStatus GetStatus(string endpoint) => GetStatus(Registry.LocalMachine, endpoint, BundledDll, InstalledDll);
+    public static BoostStatus GetStatus(string endpoint) => GetStatus(Registry.LocalMachine, endpoint, EffectInstaller.Bundled, InstalledDll);
 
-    public static BoostStatus GetStatus(RegistryKey root, string endpoint, string bundledDll, string installedDll)
+    public static BoostStatus GetStatus(RegistryKey root, string endpoint, byte[] bundledDll, string installedDll)
     {
         try
         {

@@ -8,17 +8,15 @@ public sealed class BoostInstallationTests : IDisposable
     private readonly TestRegistry _registry = new();
     private readonly EndpointEffects _effects;
     private readonly string _directory = Directory.CreateTempSubdirectory("CubeAudio.Tests").FullName;
-    private readonly string _bundled;
+    private readonly byte[] _bundled = [1, 2, 3];
     private readonly string _installed;
 
     public BoostInstallationTests()
     {
         _effects = new EndpointEffects(_registry.Root);
-        _bundled = Path.Combine(_directory, "bundled.dll");
         _installed = Path.Combine(_directory, "installed.dll");
 
-        File.WriteAllBytes(_bundled, [1, 2, 3]);
-        File.WriteAllBytes(_installed, [1, 2, 3]);
+        File.WriteAllBytes(_installed, _bundled);
     }
 
     public void Dispose()

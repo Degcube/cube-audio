@@ -24,7 +24,7 @@ if ($LASTEXITCODE -ne 0) {
     throw 'Build failed.'
 }
 
-& $sign $exe, (Join-Path $Destination 'CubeAudio.dll')
+& $sign $exe
 
 $shell = New-Object -ComObject WScript.Shell
 $link = $shell.CreateShortcut($shortcut)

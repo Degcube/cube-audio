@@ -17,6 +17,9 @@
     <Description>Microphone boost without a virtual audio device</Description>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishSingleFile>true</PublishSingleFile>
+    <DebugType>embedded</DebugType>
+    <StartupHookSupport>false</StartupHookSupport>
     <TieredPGO>true</TieredPGO>
   </PropertyGroup>
 
@@ -34,7 +37,7 @@
 
   <ItemGroup>
     <ApoSource Include="$(ApoDirectory)\Apo.cpp;$(ApoDirectory)\Apo.def;$(ApoDirectory)\Apo.rc;$(ApoDirectory)\Booster.h;$(ApoDirectory)\Contract.h;$(ApoDirectory)\CubeAudio.Apo.vcxproj;$(ApoDirectory)\build.ps1;$(MSBuildProjectDirectory)\..\Directory.Build.props" />
-    <Content Include="$(ApoDirectory)\bin\CubeAudioApo.dll" Link="CubeAudioApo.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+    <EmbeddedResource Include="$(ApoDirectory)\bin\CubeAudioApo.dll" LogicalName="CubeAudioApo.dll" Visible="false" />
   </ItemGroup>
 
   <Target Name="BuildApo" BeforeTargets="PrepareForBuild" Inputs="@(ApoSource)" Outputs="$(ApoDirectory)\bin\CubeAudioApo.dll">
